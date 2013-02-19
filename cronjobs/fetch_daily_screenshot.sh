@@ -1,0 +1,3 @@
+#!/bin/sh
+# your url goes here, so that the php script gets called...
+wget -O /dev/null "http://yoursite.com/devlogger/fetch_daily_screenshot.php"

@@ -1,0 +1,19 @@
+# This is my example TODO.txt file, this is a comment
+---------------------------------------------------------------------
+
+# The line before here indicates the name of the Project
+TODO PARSER
+==========
+[ ] This is an uncompleted task
+[x] This is a completed task
+
+---------------------------------------------------------------------
+
+# You can multiple different projects in your TODO.txt
+Hobby project
+===========
+[ ] Fill in my hobby project tasks
+
+# here's examples of comments
+- this is also a comment
+= Another example of another type of commented out line

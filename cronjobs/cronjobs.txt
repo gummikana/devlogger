@@ -1,0 +1,2 @@
+*/10 * * * * /var/www/vhosts/yoursite.com/httpdocs/devlogger/cronjobs/fetch_todo.sh
+50 */2 * * * /var/www/vhosts/yoursite.com/httpdocs/devlogger/cronjobs/fetch_daily_screenshot.sh
