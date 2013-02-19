@@ -1,0 +1,8 @@
+# I'm adding a bunch of things here that I don't want in the git if I change them
+# like config.php
+config.php
+cronjobs/*
+screenshots/*
+TODO/*
+
+
