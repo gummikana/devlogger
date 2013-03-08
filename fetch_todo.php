@@ -28,11 +28,11 @@ function get_task_status( $task_name, $project_name )
 	}
 
 	$dbarray = mysql_fetch_array($result);
-	$result = stripslashes($dbarray['task_status']);
+	$r = stripslashes($dbarray['task_status']);
 
 	mysql_free_result($result);
 
-	return $result;
+	return $r;
 }
 
 function insert_into_database( $task_name, $project_name, $task_status, $task_line_priority )
@@ -60,7 +60,8 @@ function insert_into_database( $task_name, $project_name, $task_status, $task_li
 	    die($message);
 	}
 	
-	mysql_free_result($result);
+	// no need to free $result, since INSERT returns boolean
+	// mysql_free_result($result);
 }
 
 function update_task_status( $task_name, $project_name, $task_status )
@@ -80,7 +81,8 @@ function update_task_status( $task_name, $project_name, $task_status )
 	    die($message);
 	}
 	
-	mysql_free_result($result);
+	// no need to free UPDATE, since it returns boolean
+	// mysql_free_result($result);
 }
 
 $url = dropbox_todo_txt;
