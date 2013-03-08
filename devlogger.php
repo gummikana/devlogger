@@ -77,6 +77,21 @@ $project_name = isset($_GET['project']) ? $_GET['project'] : default_project;
 if( isset($_GET['date']) ) $date_string = $_GET['date'];
 else $date_string = substr( get_latest_completed_date( $project_name ) , 0, 10 );
 
+if( $date_string == "" ) 
+{
+	echo "</center>";
+	echo "<h1>Devlogger</h1>";
+	echo "We have no data for any of your projects, yet :(<br>";
+	echo "If you're seeing this it possible means that you've setup your database and config.php, if not go do that now. Check config.php for details.<br>";
+	echo "<br>";
+	echo "You still need to setup your <a href=\"cronjobs/cronjobs.txt\">cronjobs</a><br>";
+	echo "If you've setup your cronjobs, and nothing has appeared yet, you can run the scripts manually by visiting these urls: <a href=\"fetch_todo.php\">fetch_todo.php</a> and <a href=\"fetch_daily_screenshot.php\">fetch_daily_screenshot.php</a><br>";
+	echo "(Also make sure you've set the read-write permissions correctly in screenshots and todo folders.)<br>";
+	echo "<br>";
+	echo "Happy devlogging";
+	die();
+}
+
 $data_array = get_tasks_for_date( $date_string, $project_name );
 
 $image_file = "screenshots/" . str_replace("-", "", $date_string ) . "_shot.png";
