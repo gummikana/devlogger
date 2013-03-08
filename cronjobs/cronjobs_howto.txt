@@ -1,0 +1,14 @@
+Cronjobs.txt is now at ~/utils/cronjob.txt
+To use it run
+crontab crontab.txt
+
+To list things:
+crontab -l 
+
+Remove everything
+crontab -r
+
+Here's the contents of my crontab.txt:
+*/10 * * * * /var/www/vhosts/yoursite.com/httpdocs/devlogger/cronjobs/fetch_todo.sh
+50 */2 * * * /var/www/vhosts/yoursite.com/httpdocs/devlogger/cronjobs/fetch_daily_screenshot.sh
+
