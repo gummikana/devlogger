@@ -8,7 +8,14 @@ crontab -l
 Remove everything
 crontab -r
 
+
 Here's the contents of my crontab.txt:
 */10 * * * * /var/www/vhosts/yoursite.com/httpdocs/devlogger/cronjobs/fetch_todo.sh
 50 */2 * * * /var/www/vhosts/yoursite.com/httpdocs/devlogger/cronjobs/fetch_daily_screenshot.sh
+
+
+Also remember to chmod 755 these files
+chmod 755 cronjobs/fetch_daily_screenshot.sh
+chmod 755 cronjobs/fetch_todo.sh
+
 
