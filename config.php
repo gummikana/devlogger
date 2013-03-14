@@ -20,6 +20,14 @@ date_completed DATETIME DEFAULT NULL,
 PRIMARY KEY (id)
 );
 
+
+CREATE TABLE todo_dates (
+id INT AUTO_INCREMENT,
+date_created DATE DEFAULT NULL,
+PRIMARY KEY (id),
+UNIQUE( date_created )
+);
+
 */
 
 // here's the config to your sql database
