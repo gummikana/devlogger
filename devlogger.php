@@ -10,6 +10,17 @@ require_once('config.php');
 define(db_link, mysql_connect(db_host,db_user,db_pass));
 mysql_select_db(db_name);
 
+function curPageURL() {
+ $pageURL = 'http';
+ if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
+ $pageURL .= "://";
+ if ($_SERVER["SERVER_PORT"] != "80") {
+  $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
+ } else {
+  $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
+ }
+ return $pageURL;
+}
 
 function get_latest_completed_date( $project_name ) 
 {
@@ -43,9 +54,9 @@ function get_tasks_for_date( $date, $project_name )
 	// SELECT * FROM todo_tasks WHERE DATE(date_completed) = '2013-01-05';
 	$query = "";
 	if( empty( $project_name ) )
-		$query = sprintf("SELECT * FROM todo_tasks WHERE task_status = '1' AND DATE(date_completed) = '%s'", mysql_real_escape_string($date) );
+		$query = sprintf("SELECT * FROM todo_tasks WHERE task_status = '1' AND DATE(date_completed) = DATE('%s')", mysql_real_escape_string($date) );
 	else
-		$query = sprintf("SELECT * FROM todo_tasks WHERE task_status = '1' AND DATE(date_completed) = '%s' AND project_name='%s'", mysql_real_escape_string($date), mysql_real_escape_string($project_name) );
+		$query = sprintf("SELECT * FROM todo_tasks WHERE task_status = '1' AND DATE(date_completed) = DATE('%s') AND project_name='%s'", mysql_real_escape_string($date), mysql_real_escape_string($project_name) );
 
 	$result = mysql_query($query);
 
@@ -64,6 +75,51 @@ function get_tasks_for_date( $date, $project_name )
 	return $return_value;
 }
 
+function get_latest_devlog()
+{
+	// SELECT date_created, id FROM todo_dates WHERE date_created = (SELECT MAX( date_created ) FROM todo_dates);
+	$query = "SELECT date_created, id FROM todo_dates WHERE date_created = (SELECT MAX( date_created ) FROM todo_dates)";
+	$result = mysql_query($query);
+
+	if (!$result) {
+	    $message  = 'Invalid query: ' . mysql_error() . "\n";
+	    $message .= 'Whole query: ' . $query;
+	    die($message);
+	}
+
+	$dbarray = mysql_fetch_array($result);
+	$return_me = $dbarray;
+
+	mysql_free_result($result);
+
+	return $return_me;
+}
+
+function get_devlog( $id, $date )
+{
+	$query = "";
+	
+	if( empty( $date ) )
+		$query = sprintf("SELECT date_created, id FROM todo_dates WHERE id = '%s'", mysql_real_escape_string($id) );
+	else
+		$query = sprintf("SELECT date_created, id FROM todo_dates WHERE DATE(date_created) = DATE('%s')", mysql_real_escape_string($date) );
+
+	$result = mysql_query($query);
+
+	if (!$result) {
+	    $message  = 'Invalid query: ' . mysql_error() . "\n";
+	    $message .= 'Whole query: ' . $query;
+	    die($message);
+	}
+
+	$dbarray = mysql_fetch_array($result);
+	$return_me = $dbarray;
+
+	mysql_free_result($result);
+
+	return $return_me;
+}
+
 // SELECT * FROM todo_tasks WHERE DATE(date_completed) = '2013-01-05';
 
 
@@ -73,9 +129,28 @@ function get_tasks_for_date( $date, $project_name )
 // substr( get_latest_completed_date( "TODO PARSER" ), 0, 10 )
 
 $project_name = isset($_GET['project']) ? $_GET['project'] : default_project;
+$date_string = "";
+$devlog_id = "";
+$is_latest = false;
 
-if( isset($_GET['date']) ) $date_string = $_GET['date'];
-else $date_string = substr( get_latest_completed_date( $project_name ) , 0, 10 );
+/*if( isset($_GET['date']) ) $date_string = $_GET['date'];
+else $date_string = substr( get_latest_completed_date( $project_name ) , 0, 10 );*/
+
+// get_devlog( $id, $date )
+if( isset($_GET['date']) || isset($_GET['id'] ) )
+{
+	$latest_devlog = get_devlog( $_GET['id'], $_GET['date'] );
+	$date_string = $latest_devlog['date_created'];
+	$devlog_id = $latest_devlog['id'];
+}
+else 
+{
+	$latest_devlog = get_latest_devlog();
+	$date_string = $latest_devlog['date_created'];
+	$devlog_id = $latest_devlog['id'];
+	$is_latest = true;
+}
+
 
 if( $date_string == "" ) 
 {
@@ -96,6 +171,18 @@ $data_array = get_tasks_for_date( $date_string, $project_name );
 
 $image_file = "screenshots/" . str_replace("-", "", $date_string ) . "_shot.png";
 
+?>
+<table border="0" cellpadding="5">
+<tr><td valign="top">
+<?php if ( $devlog_id > 1 ) { ?>
+<a href="<?php echo $_SERVER['PHP_SELF'] . "?id=" . ($devlog_id - 1); ?>">Prev</a>
+<?php 
+}
+?>
+</td><td>
+
+<?php
+
 // display image only if it exists
 if( file_exists( $image_file ) )
 {
@@ -110,7 +197,7 @@ echo "-->";
 // echo "Devlog #001 - Thuesday, December 29th, 2012"
 $pretty_date = date('l, F jS, Y', strtotime($date_string));
 echo "<br><div align=\"center\"><b><span style=\"font-size: 14pt; line-height: 1.3em;\"><span style=\"color: maroon;\">";
-echo "Devlog #001 - $pretty_date";
+echo "Devlog #" . str_pad( $devlog_id, 3, "0", STR_PAD_LEFT ) . " - $pretty_date";
 echo "</span></span></b></div>";
 
 // list of elements
@@ -125,6 +212,13 @@ foreach( $data_array as $entry )
 
 ?>
 </ul>
+</td></tr></table>
+</td><td valign="top">
+<?php if ( $is_latest == false ) { ?>
+<a href="<?php echo $_SERVER['PHP_SELF'] . "?id=" . ($devlog_id + 1); ?>">Next</a>
+<?php 
+}
+?>
 </td></tr></table>
 
 </center>
