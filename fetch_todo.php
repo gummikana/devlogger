@@ -85,6 +85,50 @@ function update_task_status( $task_name, $project_name, $task_status )
 	// mysql_free_result($result);
 }
 
+function insert_new_date()
+{
+	$mysqltime = date("Y-m-d H:i:s");
+	
+	$query = sprintf("INSERT INTO todo_dates (date_created) VALUES (DATE('%s'))", 
+		mysql_real_escape_string($mysqltime) );
+
+	// echo $query;
+	$result = mysql_query($query);
+
+	if (!$result) {
+	    $message  = 'Invalid query: ' . mysql_error() . "\n";
+	    $message .= 'Whole query: ' . $query;
+	    die($message);
+	}
+}
+
+function has_devlog_date()
+{
+	$mysqltime = date("Y-m-d H:i:s");
+	
+	// fetch the information
+	$query = sprintf("SELECT id FROM todo_dates WHERE date_created=DATE('%s')",
+	    mysql_real_escape_string($mysqltime) );
+
+		
+	$result = mysql_query($query);
+
+	if (!$result) {
+	    $message  = 'Invalid query: ' . mysql_error() . "\n";
+	    $message .= 'Whole query: ' . $query;
+	    die($message);
+	}
+
+	$dbarray = mysql_fetch_array($result);
+	$r = stripslashes($dbarray['id']);
+
+	mysql_free_result($result);
+
+	return $r;
+}
+
+
+
 $url = dropbox_todo_txt;
 $str = trim( file_get_contents($url) );
 
@@ -114,6 +158,8 @@ $project_start_line = 0;
 $arr = preg_split('/\n|\r\n?/', $str);
 
 $prev_arr = preg_split('/\n|\r\n?/', $prev_str);
+
+$task_done = false;
 
 foreach ($arr as $line_num => $line_no_trim ) {
     $line = trim( $line_no_trim );
@@ -150,10 +196,25 @@ foreach ($arr as $line_num => $line_no_trim ) {
     if( !($status_in_database == "0" || $status_in_database == "1") ) {
 	insert_into_database( $task_name, $project_name, $task_status, $task_line_priority );
 	echo "<b>New task ($project_name):</b> $task_name<br>";
+	if( $task_status == "1" ) $task_done = true;
     }
     else if( $status_in_database != $task_status ) {
 	update_task_status( $task_name, $project_name, $task_status );
+	if( $task_status == "1" ) $task_done = true;
     }
+}
+
+// ---- make sure we have a date entry for this devlog ----
+if( $task_done ) 
+{
+	if( has_devlog_date() ) 
+	{
+		// no need to do anything...
+	}
+	else 
+	{
+		insert_new_date();
+	}
 }
 
 // ---- WRITE the latest TODO file ----
